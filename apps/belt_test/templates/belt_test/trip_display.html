@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Destination</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <style>
+        #container{
+            height: 100%;
+            width: 100%;
+        }
+        #top{
+            text-align: right;
+            display: flex;
+            border: solid 5px black;
+            flex-direction: row-reverse;
+        }
+        #who_logged_in{
+            display: inline-block;
+            order: 1;
+            flex-grow: 6;
+        }
+        #top2{
+            border: 5px solid black;
+            text-align: left;
+        }
+        #body{
+            flex-direction: row;
+            display: flex;
+            border: 5px solid black;
+        }
+        #other_users{
+            order: 2;
+            flex-grow: .5;
+        }
+        a{
+            order: 2;
+            flex-grow: .25;
+        }
+        #title{
+            display: block;
+            font-style: italic;
+        }
+        #home{
+            flex-grow: .1;
+        }
+        #logout{
+            flex-grow: .1;
+        }
+        </style>
+    </head>
+    <body>
+        <div id = "container">
+            <div id="top">
+                <a href="/logout" id="logout">Logout</a>
+                <a href="/travels" id="home">Home</a>
+            </div>
+            <div id="top2">
+                <h1 id="title">{{ destination }}</h1>
+                <p>Planned By:  {{ planned_by }}</p>
+                <p>Description:  {{ desc }}</p>
+                <p>Travel Date From:  {{ travel_from }}</p>
+                <p>Travel Date To:  {{ travel_to }}</p>
+            </div>
+            <div id="body">
+                <div id="other_users">
+                    <h2>Other users' joining the trip:</h2>
+                        {% for other in others %}
+                            <p>{{ other.name }}</p>
+                        {% endfor %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

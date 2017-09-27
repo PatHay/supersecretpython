@@ -1,115 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <title>Travel Dashboard</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<head>
-    <title>Welcome</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <style>
+        <style>
         #container{
             height: 100%;
             width: 100%;
         }
-        .form-group{
-            text-align: left;
+        #top{
+            display: flex;
+            border: solid 5px black;
         }
-        #reg{
+        #who_logged_in{
             display: inline-block;
-            width: 45%;
-            border: 2px solid black;
-            vertical-align: top;
-            text-align: left;
-        }
-        #login{
-            display: inline-block;
-            width: 45%;
-            border: 2px solid black;
-            vertical-align: top;
-            text-align: left;
+            order: 1;
+            flex-grow: 6;
         }
         #body{
-            text-align: center;
-            height: 100%;
+            border: 5px solid silver;
         }
-    </style>
-
-</head>
-
-<body>
-    <div id="container">
-        <h1>Welcome!</h1>
-        <div id="body">
-            <div id="reg">
-                <h2>Registration</h2>
-                <p>
-                    <form action="/register" method="post">
-                        {% csrf_token %}
-                        <ul style='list-style: none'>
-                            {{ form.non_field_errors }}
-                            <div class="form-group">
-                                {{ form.name.errors.as_text }}
-                                {{ form.name.label_tag }}
-                                {{ form.name }}
-                            </div>
-                            <div class="form-group">
-                                {{ form.alias.errors }}
-                                {{ form.alias.label_tag }}
-                                {{ form.alias }}
-                            </div>
-                            <div class="form-group">
-                                {{ form.email.errors }}
-                                {{ form.email.label_tag }}
-                                {{ form.email }}
-                            </div>
-                            <div class="form-group">
-                                {{ form.password.errors }}
-                                {{ form.password.label_tag }}
-                                {{ form.password }}
-                            </div>
-                            <div class="form-group">
-                                {{ form.confirm_password.errors }}
-                                {{ form.confirm_password.label_tag }}
-                                {{ form.confirm_password }}
-                            </div>
-                        <button type="submit" class="btn btn-primary">Register</button>
-                        </ul>
-                    </form>
-                </p>
+        #your_trips{
+            width: 500px;
+            border: 5px solid black;
+            margin-bottom: 20px;
+            vertical-align: top;
+        }
+        #other_trips{
+            order: 2;
+            flex-grow: 0;
+            border: 5px solid black;
+            display: inline-block;
+        }
+        #trip_list{
+            overflow: scroll;
+        }
+        a{
+            order: 2;
+            flex-grow: .25;
+        }
+        #bottom{
+            text-align: right;
+        }
+        </style>
+    </head>
+    <body>
+        <div id = "container">
+            <div id="top">
+                <h2 id="who_logged_in">Welcome, {{ username }}!</h2>
+                <a href="/logout">Logout</a>
             </div>
-            <div id="login">
-                <h2>Login</h2>
-                    <form action="/login" method="post">
-                        {% csrf_token %}        
-                    <ul style='list-style: none'>
-                        <div class="form-group">
-                            {{ form2.email.errors }}
-                            {{ form2.email.label_tag }}
-                            {{ form2.email }}
-                        </div>
-                        <div class="form-group">
-                            {{ form2.password.errors }}
-                            {{ form2.password.label_tag }}
-                            {{ form2.password }}
-                        </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </ul>
-                </form>
+            <div id="body">
+                <div id="your_trips">
+                    <h3>Your Trip Schedules</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Destination</th>
+                                <th>Travel Start Date</th>
+                                <th>Travel End Date</th>
+                                <th>Plan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trip in my_trips %}
+                            <tr>
+                                <td><a href="/travels/destination/{{trip.id}}">{{ trip.destination }}</a></td>
+                                <td>{{ trip.start_date }}</td>
+                                <td>{{ trip.end_date }}</td>
+                                <td>{{ trip.desc }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="other_trips">
+                    <h3>Other User's Travel Plans</h3>
+                        <p>
+                            {% if messages %}
+                                {% for message in messages %}
+                                    {% if "name" in message.tags %}
+                                        <h3 {% if message.tags %} class="{{ message.tags }}"{% endif %}>Sorry {{ message }}, you've already joined this trip!</h3>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </p>
+                    <table id="trip_list">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Destination</th>
+                                    <th>Travel Start Date</th>
+                                    <th>Travel End Date</th>
+                                    <th>Plan</th>
+                                    <th>Do You Want to Join?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trip in trips %}
+                                <tr>
+                                    <td>{{ trip.planned_by.name }}</td>
+                                    <td><a href="/travels/destination/{{ trip.id }}">{{ trip.destination }}</a></td>
+                                    <td>{{ trip.start_date }}</td>
+                                    <td>{{ trip.end_date }}</td>
+                                    <td>{{ trip.desc }}</td>
+                                    <td><a href="/travels/destination/{{ trip.id }}/join">Join</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                </div>
+                <div id="bottom">
+                    <a href="/travels/add">Add Travel Plan</a>
+                </div>
             </div>
-            <p>
-                {% if messages %}
-                    {% for message in messages %}
-                        {% if "name" in message.tags %}
-                            <h3 {% if message.tags %} class="{{ message.tags }}"{% endif %}>Thanks for registering, {{ message }}</h3>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            </p>
         </div>
-    </div>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
-</body>
-
+    </body>
 </html>

@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
-from forms import Register, Login
-# from forms import Register, Login, Add_Book, Add_Review
-from models import User, Book, Review, Author
+from forms import Register, Login, Trip
+from models import User, Travel_Plan
 import bcrypt
 
 def index(request):
@@ -12,145 +11,97 @@ def index(request):
         'form': form,
         'form2': login,
     }
-    return render(request, "belt_test/index.html", context)
+    return render(request, "belt_test/login.html", context)
 
 def register(request):
     form = Register(request.POST)
     form2 = Login()
     if request.method == 'POST':
         if form.is_valid():
-            email = form.cleaned_data['email']
+            username = form.cleaned_data['username']
             create = User.objects.create(name = form.cleaned_data['name'], 
-            alias = form.cleaned_data['alias'], email = form.cleaned_data['email'], 
-            password = bcrypt.hashpw(form.cleaned_data['password'].encode('utf8'), bcrypt.gensalt()
-            ))
+            username = form.cleaned_data['username'], password = bcrypt.hashpw(form.cleaned_data['password'].encode('utf8'), bcrypt.gensalt()))
             messages.add_message(request, messages.INFO, form.cleaned_data['name'], extra_tags="name")
             return redirect('/')
     context = {
         "form": form,
         "form2": form2,
     }
-    return render(request, "belt_reviewer/index.html", context)
+    return render(request, "belt_test/login.html", context)
 
 def login(request):
     try:
         request.session['login']
-        request.session['alias']
+        request.session['username']
     except KeyError:
         request.session['login'] = []
-        request.session['alias'] = []
+        request.session['username'] = []
     form = Register()
     login = Login(request.POST)
     if request.method == 'POST':
         if login.is_valid():    
             print "valid"
-            email = login.cleaned_data['email']
-            request.session['login'] = User.objects.get(email=email).id
-            request.session['alias'] = User.objects.get(email=email).alias
-            print request.session['alias']
-            return redirect('/books')
-            
-    # print "failed login form check"
+            username = login.cleaned_data['username']
+            request.session['login'] = User.objects.get(username=username).id
+            request.session['username'] = User.objects.get(username=username).username
+            print request.session['username']
+            return redirect('/travels')
+
     context = {
         "form": form,
         "form2": login,
     }
-    return render(request, "belt_reviewer/index.html", context)
+    return render(request, "belt_test/login.html", context)
 
 def success(request):
     context = {
-        'login': request.session['alias'],
-        'books': Book.objects.all(),
-        "reviews": Review.objects.order_by("-created_at")[:3],
+        'username': request.session['username'],
+        'my_trips': User.objects.get(id=request.session['login']).joint_trips.order_by("start_date")|User.objects.get(id=request.session['login']).my_trips.order_by("start_date"),
+        'trips': Travel_Plan.objects.exclude(planned_by = request.session['login']).order_by("start_date"),
     }
-    return render(request, "belt_reviewer/books.html", context)
+    return render(request, "belt_test/index.html", context)
 
 def logout(request):
     request.session.clear()
     return redirect('/')
 
-# def add_book(request):
-#     form = Add_Book()
-#     context = {
-#         'form': form,
-#     }
-#     return render(request, "belt_reviewer/add.html", context)
+def add(request):
+    form = Trip()
+    context = {
+        'form': form,
+    }
+    return render(request, "belt_test/add.html", context)
 
-# def add(request):
-#     if request.method == 'POST':
-#         form = Add_Book(request.POST)
-#         form.fields['new_author'].required = False
-#         if form.is_valid():
-#             title = form.cleaned_data['title']
-#             author = Author.objects.get(id=form.cleaned_data['author'])
-#             new_author = form.cleaned_data['new_author']
-#             review = form.cleaned_data['review']
-#             rating = form.cleaned_data['rating']
-#             if len(new_author) > 0:
-#                 a = Author.objects.create(name = new_author)
-#                 a.save()
-#                 b = Book.objects.create(title = form.cleaned_data['title'],
-#                 author = a)
-#                 b.save()
-#                 r = Review.objects.create(written_review=review, rating = rating,
-#                 reviewer=User.objects.get(id=request.session['login']), 
-#                 reviewed_book = b)
-#                 r.save()
-#             if len(new_author) < 1:
-#                 b = Book.objects.create(title = form.cleaned_data['title'],
-#                 author = author)
-#                 b.save()
-#                 r = Review.objects.create(written_review=review, rating = rating,
-#                 reviewer=User.objects.get(id=request.session['login']), 
-#                 reviewed_book = b)
-#                 r.save()
-#         return redirect("/books/"+str(Book.objects.get(title=title).id))
-#     context = {
-#         "form": form,
-#     }
-#     return render(request, "belt_reviewer/index.html", context)
+def add_trip(request):
+    form = Trip(request.POST)
+    if request.method == 'POST':
+        if form.is_valid():
+            Travel_Plan.objects.create(destination = form.cleaned_data['destination'], desc = form.cleaned_data['desc'], start_date = form.cleaned_data['travel_from'],end_date = form.cleaned_data['travel_to'], planned_by = User.objects.get(id = request.session['login']))
+            return redirect('/travels')
+    context = {
+        "form": form,
+    }
+    return render(request, "belt_test/add.html", context)
 
-# def display(request, number):
-#     form = Add_Review()
+
+def display(request, number):
     
-#     context = {
-#         "book_title": Book.objects.get(id=number).title,
-#         "author": Book.objects.get(id=number).author.name,
-#         "reviews": Book.objects.get(id=number).book_reviews.all(),
-#         "form": form,
-#         "number": number,
-#         "logged_in": request.session['login'],
-#     }
-#     return render(request,"belt_reviewer/book_display.html", context)
+    context = {
+        "destination": Travel_Plan.objects.get(id=number).destination,
+        "planned_by": Travel_Plan.objects.get(id=number).planned_by.name,
+        "desc": Travel_Plan.objects.get(id=number).desc,
+        "travel_from": Travel_Plan.objects.get(id=number).start_date,
+        "travel_to": Travel_Plan.objects.get(id=number).end_date,
+        "others": Travel_Plan.objects.get(id=number).joined_users.all()
+    }
+    return render(request,"belt_test/trip_display.html", context)
 
-# def add_review(request, number):
-#     if request.method == 'POST':
-#         form = Add_Review(request.POST)
-#         if form.is_valid():
-#             review = form.cleaned_data['review']
-#             rating = form.cleaned_data['rating']
-#             r = Review.objects.create(written_review=review, rating = rating,
-#             reviewer=User.objects.get(id=request.session['login']),
-#             reviewed_book=Book.objects.get(id=number))
-#             r.save()
-#     return redirect("/books/"+str(number))
+def join(request, number):
+    if Travel_Plan.objects.get(id=number).joined_users.filter(username=request.session['username']):
+        messages.add_message(request, messages.INFO, request.session['username'], extra_tags="name")
 
-# def user_display(request, number):
-#     context = {
-#         "alias": User.objects.get(id=number).alias,
-#         "name": User.objects.get(id=number).name,
-#         "email": User.objects.get(id=number).email,
-#         "total_reviews": User.objects.get(id=number).user_reviews.count(),
-#         "reviews": User.objects.get(id=number).user_reviews.all(),
-#     }
-#     return render(request,"belt_reviewer/user_display.html", context)
-
-# def delete(request, book_number, review_number):
-#     Review.objects.filter(reviewer=request.session['login']).filter(id=review_number).delete()
-
-#     if Book.objects.get(id=book_number).book_reviews.count() > 0:
-#         return redirect('/books/' + book_number)
-
-#     elif Book.objects.get(id=book_number).book_reviews.count() < 1:
-#         Book.objects.get(id=book_number).delete()
-#         return redirect('/books')
+    else:
+        trip = Travel_Plan.objects.get(id=number)
+        User.objects.get(id=request.session['login']).joint_trips.add(trip)
+    
+    return redirect('/travels')

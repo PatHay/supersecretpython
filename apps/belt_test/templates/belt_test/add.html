@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Add Plan</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="/resources/demos/style.css">
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script>
+        $( function() {
+          $( "#id_travel_from" ).datepicker();
+          $("#id_travel_to").datepicker();
+        } );
+        </script>
+        <style>
+        #container{
+            height: 100%;
+            width: 100%;
+        }
+        #top{
+            text-align: right;
+            display: flex;
+            flex-direction: row-reverse;
+        }
+        #who_logged_in{
+            display: inline-block;
+            order: 1;
+            flex-grow: 6;
+        }
+        #body{
+            flex-direction: column;
+            display: flex;
+        }
+        h2{
+            order: 1;
+            flex-grow: 2;
+            display: inline-block;
+        }
+        #new_trip{
+            order: 1;
+            flex-grow: 2;
+            display: inline-block;
+            text-align: right;
+            width: 50%;
+        }
+        a{
+            order: 1;
+            flex-grow: .1;
+        }
+        .fieldWrapper{
+            vertical-align: top;
+        }
+        #main_form{
+            text-align: left;
+        }
+        </style>
+    </head>
+    <body>
+        <div id = "container">
+            <div id="top">
+                <a href="/logout">Logout</a>
+                <a href="/travels">Home</a>
+            </div>
+            <div id="body">
+                <h2>Add a Trip</h2>
+                    <div id="new_trip">
+                        <form action="/add_trip" method="post">
+                            {% csrf_token %}
+                            <ul style='list-style: none'>
+                                <div id="main_form">
+                                    <div class="fieldWrapper">
+                                        {{ form.destination.errors }}
+                                        {{ form.destination.label_tag }}
+                                        {{ form.destination }}
+                                    </div>
+                                    <div class="fieldWrapper">
+                                        {{ form.desc.errors }}
+                                        {{ form.desc.label_tag }}
+                                        {{ form.desc }}
+                                    </div>
+                                    <div class="datepicker">
+                                        {{ form.travel_from.errors }}
+                                        {{ form.travel_from.label_tag }}
+                                        {{ form.travel_from }}
+                                    </div>
+                                    <div class="datepicker">
+                                        {{ form.travel_to.errors }}
+                                        {{ form.travel_to.label_tag }}
+                                        {{ form.travel_to }}
+                                    </div>
+                                </div>
+                            <input type="submit" value="Add">
+                            </ul>
+                        </form>
+                    </div>
+            </div>
+        </div>
+    </body>
+</html>
